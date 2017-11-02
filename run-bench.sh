@@ -1,5 +1,15 @@
 #!/bin/bash
 
+## Initial setup:
+#
+# opam 2.0~alpha6 an "operf" switch with operf-macro installed (currently
+# working: ocaml 4.02.3, operf pinned to git://github.com/ocamlpro/ocaml-perf,
+# operf-macro pinned to git://github.com/OCamlPro/operf-macro#opam2)
+#
+# opam repo add benches git+https://github.com/OCamlPro/ocamlbench-repo --dont-select
+#
+# Current switch should be "operf".
+
 shopt -s nullglob
 
 OPT_NOWAIT=
@@ -32,8 +42,6 @@ BASELOGDIR=~/logs/operf
 LOGDIR=$BASELOGDIR/$DATE
 
 OPERFDIR=~/.cache/operf/macro/
-
-mkdir -p $OPERFDIR
 
 LOCK=$BASELOGDIR/lock
 
@@ -82,20 +90,15 @@ opam() {
 
 echo "=== SETTING UP BENCH SWITCHES AT $DATE ==="
 
-## Initial setup:
-#
-# opam 2.0~alpha6 an "operf" switch with operf-macro installed (currently
-# working: ocaml 4.02.3, operf pinned to git://github.com/ocamlpro/ocaml-perf,
-# operf-macro pinned to git://github.com/OCamlPro/operf-macro#opam2)
-#
-# opam repo add benches git+https://github.com/OCamlPro/ocamlbench-repo --dont-select
-
 OPERF_SWITCH=operf
 
 opam update --check benches
 HAS_CHANGES=$?
 
 COMPILERS=($(opam list --no-switch --has-flag compiler --repo=benches --all-versions --short))
+echo "++Compilers++"
+echo $COMPILERS
+
 SWITCHES=()
 INSTALLED_BENCH_SWITCHES=($(opam switch list -s |grep '+bench$'))
 
@@ -129,8 +132,14 @@ opam update --check --switch $OPERF_SWITCH
 opam upgrade --check --yes operf-macro --switch $OPERF_SWITCH --json $LOGDIR/$OPERF_SWITCH.json
 HAS_CHANGES=$((HAS_CHANGES * $?))
 
-BENCHES=($(opam list --no-switch --required-by all-bench --short --column name))
+BENCHES=($(opam list --required-by all-bench --short --column name))
+echo "++Benches++"
+echo $BENCHES
+
 ALL_BENCHES=($(opam list --no-switch --short --column name '*-bench'))
+echo "++All Benches++"
+echo $ALL_BENCHES
+
 DISABLED_BENCHES=()
 for B in "${ALL_BENCHES[@]}"; do
     if [[ ! " ${BENCHES[@]} " =~ " $B " ]]; then
@@ -162,7 +171,7 @@ for SWITCH in "${BENCH_SWITCHES[@]}"; do
     echo "=== UPGRADING SWITCH $SWITCH =="
     opam remove "${DISABLED_BENCHES[@]}" --yes --switch $SWITCH
     COMP=($(opam list --base --short --switch $SWITCH))
-    opam upgrade --all "${BENCHES[@]}" --soft --yes --switch $SWITCH --json $LOGDIR/$SWITCH.json
+    opam upgrade --all "${BENCHES[@]}" --best-effort --yes --switch $SWITCH --json $LOGDIR/$SWITCH.json
 done
 
 LOGSWITCHES=("${BENCH_SWITCHES[@]/#/$LOGDIR/}")
@@ -223,7 +232,7 @@ echo
 echo "=== BENCH START ==="
 
 for SWITCH in "${BENCH_SWITCHES[@]}"; do
-    nice -n -5 opam config exec --switch $OPERF_SWITCH -- timeout 90m operf-macro run --switch $SWITCH
+    nice -19 opam config exec --switch $OPERF_SWITCH -- timeout 90m operf-macro run --switch $SWITCH
 done
 
 opam config exec --switch $OPERF_SWITCH -- operf-macro summarize -b csv >$LOGDIR/summary.csv
