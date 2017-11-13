@@ -3,10 +3,10 @@
 ## Initial setup:
 #
 # opam 2.0~alpha6 an "operf" switch with operf-macro installed (currently
-# working: ocaml 4.02.3, operf pinned to git://github.com/ocamlpro/ocaml-perf,
+# working: ocaml 4.02.3, perf pinned to git://github.com/ocamlpro/ocaml-perf,
 # operf-macro pinned to git://github.com/OCamlPro/operf-macro#opam2)
 #
-# opam repo add benches git+https://github.com/OCamlPro/ocamlbench-repo --dont-select
+# opam repo add benches git+https://github.com/OCamlPro/ocamlbench-repo -a
 #
 # Current switch should be "operf".
 
