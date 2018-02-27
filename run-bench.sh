@@ -6,7 +6,11 @@
 # working: ocaml 4.02.3, perf pinned to git://github.com/ocamlpro/ocaml-perf,
 # operf-macro pinned to git://github.com/OCamlPro/operf-macro#opam2)
 #
-# opam repo add benches git+https://github.com/OCamlPro/ocamlbench-repo -a
+# opam repo add benches <repo> -a
+# 
+# where <repo> is 
+#    https://github.com/kayceesrk/ocamlbench-repo#ppc64 for ppc64
+#    https://github.com/kayceesrk/ocamlbench-repo#aarch64 for aarch64
 #
 # Current switch should be "operf".
 
