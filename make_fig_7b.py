@@ -53,5 +53,6 @@ plt.ylabel("Normalized Time")
 plt.xticks(ind+2*width, bench_list, rotation=90)
 plt.legend((bal_plt[0], fbs_plt[0], sra_plt[0]),
            ('branch after load', 'fence before store', 'strong release-acquire'))
-plt.savefig("aarch64.pdf")
+print "Writing 'fig_7b.pdf'"
+plt.savefig("fig_7b.pdf")
 plt.close()

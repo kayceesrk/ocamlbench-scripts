@@ -78,5 +78,6 @@ plt.xticks(ind, bench_list, rotation=90)
 plt.legend((lif_plt[0], is_plt[0], lmf_plt[0], ass_plt[0]),
            ('load immutable field', 'initialising store', 'load mutable field', 'assignment'),
            loc='lower center', bbox_to_anchor=(0.5, 1.05), shadow = True, fancybox=True, ncol=4)
-plt.savefig("chars.pdf")
+print "Writing 'fig_7a.pdf'"
+plt.savefig("fig_7a.pdf")
 plt.close()
