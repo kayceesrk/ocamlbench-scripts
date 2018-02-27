@@ -1,2 +1,9 @@
 operf-macro.0.2    git  git://github.com/OCamlPro/operf-macro#opam2
 perf.0.1           git  git://github.com/ocamlpro/ocaml-perf
+
+For ppc64
+---------
+Frama-C isn't properly installed from the ocamlbench-repo on ppc64. Hence, it needs to be manually installed on the switches.
+
+opam switch list -s | grep "4.07*" | xargs -i opam config exec --switch={} -- opam pin add -k git -n frama-c.20170501 git+https://github.com/kayceesrk/Frama-C-snapshot
+opam switch list -s | grep "4.07*" | xargs -i opam config exec --switch={} -- opam install frama-c-bench -y
