@@ -29,7 +29,7 @@ bench_list = ['almabench', 'numal-rnd_access', 'setrip', 'setrip-smallbuf', 'num
      'numal-k-means', 'numal-durand-kerner-aberth', 'sequence', 'sequence-cps']
 
 width=0.25
-ind = np.arange(len(data.keys()))
+ind = np.arange(len(bench_list))
 matplotlib.rcParams['figure.figsize'] = [16.0, 10.0]
 
 
