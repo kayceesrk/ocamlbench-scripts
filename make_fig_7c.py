@@ -48,7 +48,7 @@ fbs_plt = plt.bar(ind+width, fbs_list, width, color='y')
 sra_plt = plt.bar(ind+2*width, sra_list, width, color='r')
 
 plt.gcf().subplots_adjust(bottom=0.45)
-plt.xlabel("Performance of AArch64")
+plt.xlabel("Performance of PPC64")
 plt.ylabel("Normalized Time")
 plt.xticks(ind+2*width, bench_list, rotation=90)
 plt.legend((bal_plt[0], fbs_plt[0], sra_plt[0]),
