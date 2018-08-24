@@ -14,6 +14,10 @@
 #    git+https://github.com/kayceesrk/ocamlbench-repo#multicore for multicore
 #
 # Current switch should be "operf".
+#
+# Update REPODIR variable below to the location of this cloned repo.
+
+REPODIR=$HOME/repos/ocamlbench-scripts
 
 shopt -s nullglob
 
@@ -43,6 +47,8 @@ STARTTIME=$(date +%s)
 DATE=$(date +%Y-%m-%d-%H%M)
 
 BASELOGDIR=~/logs/operf
+
+mkdir -p $BASELOGDIR
 
 LOGDIR=$BASELOGDIR/$DATE
 
@@ -181,7 +187,7 @@ for SWITCH in "${BENCH_SWITCHES[@]}"; do
 done
 
 LOGSWITCHES=("${BENCH_SWITCHES[@]/#/$LOGDIR/}")
-./opamjson2html.native ${LOGSWITCHES[@]/%/.json*} >$LOGDIR/build.html
+$REPODIR/opamjson2html.native ${LOGSWITCHES[@]/%/.json*} >$LOGDIR/build.html
 
 UPGRADE_TIME=$(($(date +%s) - STARTTIME))
 
@@ -263,7 +269,7 @@ EOF
 
 publish log timings summary.csv "*/*.summary" "*-time_real.csv"
 
-cp compare.js $BASELOGDIR
+cp $REPODIR/compare.js $BASELOGDIR
 
 cd $BASELOGDIR
 

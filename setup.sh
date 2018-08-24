@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Run for the initial setup.
+## Install opam.2.0.0
 
 opam create operf 4.02.3
 opam pin add -y -k git git://github.com/kayceesrk/ocaml-perf
