@@ -275,7 +275,7 @@ cd $BASELOGDIR
 
 echo "<html><head><title>bench index</title></head><body><ul>
   $(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1">\1</a></li>%')
-</ul></body></html>" >index.html
+</ul></body></html>" >build.html
 
 echo "<html><head><title>bench index</title></head><body>
   <script src=\"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js\"> </script>
@@ -285,9 +285,9 @@ echo "<html><head><title>bench index</title></head><body>
   <div> <input type=\"button\" value=\"compare\" id=\"compareButton\" onclick=\"plot()\"> </div>
   </br>
 	$(find . -name '*time_real.csv' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | sed 's/.*\(20.*\)+bench-time_real.csv/<div><input type="checkbox" id="benchrun" value="\1">\1<\/div>/g')
-	</body></html>" > compare.html
+	</body></html>" > index.html
 
-tar -u index.html compare.html compare.js -f results.tar
+tar -u index.html build.html compare.js -f results.tar
 gzip -c --rsyncable results.tar > results.tar.gz
 
 echo "Done"
