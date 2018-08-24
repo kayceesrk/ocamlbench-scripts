@@ -135,17 +135,18 @@ function plot() {
   Promise.all(urls.map(function(url) {
     return fetch(url).then(function(response) {
       return response.ok ? response.text() : Promise.reject(response.status);
-    }).then(function(text) {
-      var data = CSVToArray(text); //drops the first element
-      var compiler = url.replace("/", " ").replace(fileSuffix,"");
-      if (!compilers.includes(compiler))
-        compilers.push(compiler);
-      populateTable (data, compiler);
-    });
+    }).then(function(csvtext) {
+      return fetch(url.replace(fileSuffix,".hash")).then(function(response) {
+        return response.ok ? response.text() : Promise.reject(response.status);
+      }).then(function(hash) {
+        var data = CSVToArray(csvtext); //drops the first element
+        var compiler = url.replace("/", ":").replace(fileSuffix,":") + hash;
+        if (!compilers.includes(compiler))
+          compilers.push(compiler);
+        populateTable (data, compiler);
+    })});
   })).then(function(ignored) {
     normaliseTable();
     redraw();
   });
 }
-
-
