@@ -1,16 +1,17 @@
 #!/bin/bash
 
-## Initial setup:
+## Initial setup: See setup.sh.
 #
 # opam 2.0~alpha6 an "operf" switch with operf-macro installed (currently
-# working: ocaml 4.02.3, perf pinned to git://github.com/ocamlpro/ocaml-perf,
+# working: ocaml 4.02.3, perf pinned to git://github.com/kayceesrk/ocaml-perf,
 # operf-macro pinned to git://github.com/OCamlPro/operf-macro#opam2)
 #
 # opam repo add benches <repo> -a
-# 
-# where <repo> is 
+#
+# where <repo> is
 #    git+https://github.com/kayceesrk/ocamlbench-repo#ppc64 for ppc64
 #    git+https://github.com/kayceesrk/ocamlbench-repo#aarch64 for aarch64
+#    git+https://github.com/kayceesrk/ocamlbench-repo#multicore for multicore
 #
 # Current switch should be "operf".
 
@@ -180,7 +181,7 @@ for SWITCH in "${BENCH_SWITCHES[@]}"; do
 done
 
 LOGSWITCHES=("${BENCH_SWITCHES[@]/#/$LOGDIR/}")
-opamjson2html ${LOGSWITCHES[@]/%/.json*} >$LOGDIR/build.html
+./opamjson2html.native ${LOGSWITCHES[@]/%/.json*} >$LOGDIR/build.html
 
 UPGRADE_TIME=$(($(date +%s) - STARTTIME))
 
@@ -241,6 +242,11 @@ for SWITCH in "${BENCH_SWITCHES[@]}"; do
 done
 
 opam config exec --switch $OPERF_SWITCH -- operf-macro summarize -b csv >$LOGDIR/summary.csv
+
+for SWITCH in "${BENCH_SWITCHES[@]}"; do
+	opam config exec --switch $OPERF_SWITCH -- operf-macro summarize -b csv --no-normalize -t time_real --switch $SWITCH > $LOGDIR/$SWITCH-time_real.csv
+done
+
 cp -r $OPERFDIR/* $LOGDIR
 
 BENCH_TIME=$(($(date +%s) - BENCH_START_TIME))
@@ -255,8 +261,27 @@ Benches: $(hours $BENCH_TIME)
 Total: $(hours $((UPGRADE_TIME + BENCH_TIME)))
 EOF
 
-publish log timings summary.csv "*/*.summary"
+publish log timings summary.csv "*/*.summary" "*-time_real.csv"
 
-cd $BASELOGDIR && echo "<html><head><title>bench index</title></head><body><ul>$(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1">\1</a></li>%')</ul></body></html>" >index.html
+cp compare.js $BASELOGDIR
+
+cd $BASELOGDIR
+
+echo "<html><head><title>bench index</title></head><body><ul>
+  $(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1">\1</a></li>%')
+</ul></body></html>" >index.html
+
+echo "<html><head><title>bench index</title></head><body>
+  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js\"> </script>
+  <script src=\"compare.js\"></script>
+
+  <div id=\"container\" style=\"width: 90%;\"> <canvas id=\"chart\"></canvas> </div>
+  <div> <input type=\"button\" value=\"compare\" id=\"compareButton\" onclick=\"plot()\"> </div>
+  </br>
+	$(find . -name '*time_real.csv' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | sed 's/.*\(20.*\)+bench-time_real.csv/<div><input type="checkbox" id="benchrun" value="\1">\1<\/div>/g')
+	</body></html>" > compare.html
+
+tar -u index.html compare.html compare.js -f results.tar
+gzip -c --rsyncable results.tar > results.tar.gz
 
 echo "Done"
