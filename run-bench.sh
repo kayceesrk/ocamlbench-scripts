@@ -274,7 +274,7 @@ cp $REPODIR/compare.js $BASELOGDIR
 cd $BASELOGDIR
 
 echo "<html><head><title>bench index</title></head><body><ul>
-  $(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1">\1</a></li>%')
+  $(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1/build.html">\1</a></li>%')
 </ul></body></html>" >build.html
 
 echo "<html><head><title>bench index</title></head><body>
