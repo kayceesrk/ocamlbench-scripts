@@ -290,4 +290,13 @@ echo "<html><head><title>bench index</title></head><body>
 tar -u index.html build.html compare.js -f results.tar
 gzip -c --rsyncable results.tar > results.tar.gz
 
+WEB=$HOME/repos/ocamllabs.github.io
+mkdir -p $WEB/multicore
+tar xf results.tar -C $WEB/multicore
+
+cd $WEB
+git add multicore
+git commit -a -m "multicore bench sync"
+git push
+
 echo "Done"
