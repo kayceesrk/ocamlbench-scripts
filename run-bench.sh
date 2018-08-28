@@ -17,7 +17,7 @@
 #
 # Update REPODIR variable below to the location of this cloned repo.
 
-REPODIR=$HOME/repos/ocamlbench-scripts
+REPODIR=/root/ocamlbench-scripts
 
 shopt -s nullglob
 
@@ -273,28 +273,32 @@ cp $REPODIR/compare.js $BASELOGDIR
 
 cd $BASELOGDIR
 
-echo "<html><head><title>bench index</title></head><body><ul>
-  $(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1/build.html">\1</a></li>%')
-</ul></body></html>" >build.html
+make_html () {
+	echo "<html><head><title>bench index</title></head><body><ul>
+		$(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1/build.html">\1</a></li>%')
+	</ul></body></html>" >build.html
 
-echo "<html><head><title>bench index</title></head><body>
-  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js\"> </script>
-  <script src=\"compare.js\"></script>
+	echo "<html><head><title>bench index</title></head><body>
+		<script src=\"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js\"> </script>
+		<script src=\"compare.js\"></script>
 
-  <div id=\"container\" style=\"width: 90%;\"> <canvas id=\"chart\"></canvas> </div>
-  <div> <input type=\"button\" value=\"compare\" id=\"compareButton\" onclick=\"plot()\"> </div>
-  </br>
-	$(find . -name '*time_real.csv' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | sed 's/.*\(20.*\)+bench-time_real.csv/<div><input type="checkbox" name="benchrun" value="\1">\1<\/div>/g')
-	</body></html>" > index.html
+		<div id=\"container\" style=\"width: 90%;\"> <canvas id=\"chart\"></canvas> </div>
+		<div> <input type=\"button\" value=\"compare\" id=\"compareButton\" onclick=\"plot()\"> </div>
+		</br>
+		$(find . -name '*time_real.csv' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | sed 's/.*\(20.*\)+bench-time_real.csv/<div><input type="checkbox" name="benchrun" value="\1">\1<\/div>/g')
+		</body></html>" > index.html
+}
 
+make_html
 tar -u index.html build.html compare.js -f results.tar
 gzip -c --rsyncable results.tar > results.tar.gz
 
-WEB=$HOME/repos/ocamllabs.github.io
+WEB=/root/ocamllabs.github.io
 mkdir -p $WEB/multicore
 tar xf results.tar -C $WEB/multicore
 
 cd $WEB
+make_html
 git add multicore
 git commit -a -m "multicore bench sync"
 git push
