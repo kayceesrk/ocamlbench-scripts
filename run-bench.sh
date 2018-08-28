@@ -14,6 +14,10 @@
 #    git+https://github.com/kayceesrk/ocamlbench-repo#multicore for multicore
 #
 # Current switch should be "operf".
+#
+# Update REPODIR variable below to the location of this cloned repo.
+
+REPODIR=$HOME/repos/ocamlbench-scripts
 
 shopt -s nullglob
 
@@ -43,6 +47,8 @@ STARTTIME=$(date +%s)
 DATE=$(date +%Y-%m-%d-%H%M)
 
 BASELOGDIR=~/logs/operf
+
+mkdir -p $BASELOGDIR
 
 LOGDIR=$BASELOGDIR/$DATE
 
@@ -181,7 +187,7 @@ for SWITCH in "${BENCH_SWITCHES[@]}"; do
 done
 
 LOGSWITCHES=("${BENCH_SWITCHES[@]/#/$LOGDIR/}")
-./opamjson2html.native ${LOGSWITCHES[@]/%/.json*} >$LOGDIR/build.html
+$REPODIR/opamjson2html.native ${LOGSWITCHES[@]/%/.json*} >$LOGDIR/build.html
 
 UPGRADE_TIME=$(($(date +%s) - STARTTIME))
 
@@ -263,13 +269,13 @@ EOF
 
 publish log timings summary.csv "*/*.summary" "*-time_real.csv"
 
-cp compare.js $BASELOGDIR
+cp $REPODIR/compare.js $BASELOGDIR
 
 cd $BASELOGDIR
 
 echo "<html><head><title>bench index</title></head><body><ul>
-  $(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1">\1</a></li>%')
-</ul></body></html>" >index.html
+  $(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1/build.html">\1</a></li>%')
+</ul></body></html>" >build.html
 
 echo "<html><head><title>bench index</title></head><body>
   <script src=\"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js\"> </script>
@@ -278,10 +284,19 @@ echo "<html><head><title>bench index</title></head><body>
   <div id=\"container\" style=\"width: 90%;\"> <canvas id=\"chart\"></canvas> </div>
   <div> <input type=\"button\" value=\"compare\" id=\"compareButton\" onclick=\"plot()\"> </div>
   </br>
-	$(find . -name '*time_real.csv' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | sed 's/.*\(20.*\)+bench-time_real.csv/<div><input type="checkbox" id="benchrun" value="\1">\1<\/div>/g')
-	</body></html>" > compare.html
+	$(find . -name '*time_real.csv' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | sed 's/.*\(20.*\)+bench-time_real.csv/<div><input type="checkbox" name="benchrun" value="\1">\1<\/div>/g')
+	</body></html>" > index.html
 
-tar -u index.html compare.html compare.js -f results.tar
+tar -u index.html build.html compare.js -f results.tar
 gzip -c --rsyncable results.tar > results.tar.gz
+
+WEB=$HOME/repos/ocamllabs.github.io
+mkdir -p $WEB/multicore
+tar xf results.tar -C $WEB/multicore
+
+cd $WEB
+git add multicore
+git commit -a -m "multicore bench sync"
+git push
 
 echo "Done"
