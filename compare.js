@@ -56,7 +56,9 @@ function populateTable (data, compiler) {
 }
 
 function normaliseTable () {
-  for (var bench in table) {
+  var minTimes = {};
+  var benches = Object.keys(table).sort();
+  benches.forEach (function (bench) {
     if (table.hasOwnProperty(bench)) {
       var minValue = Number.MAX_VALUE;
 
@@ -68,23 +70,28 @@ function normaliseTable () {
         }
       }
 
+      minTimes[bench] = minValue;
+
       for (var compiler in table[bench]) {
         if (table[bench].hasOwnProperty(compiler)) {
           table[bench][compiler] = Number(table[bench][compiler]) / minValue;
         }
       }
-
     }
-  }
+  });
+
+  return minTimes;
 }
 
-function redraw() {
+function redraw(minTimes) {
   var timings = {};
   compilers.forEach (function(c) {
     timings[c] = [];
   });
-  var labels = Object.keys(table).sort();
-  labels.forEach (function (bench) {
+  var labels = [];
+  var benches = Object.keys(table).sort();
+  benches.forEach (function (bench) {
+    labels.push(bench + " (" + Math.round(minTimes[bench]/1000000.0) + ")");
     compilers.forEach(function (c) {
       timings[c].push(table[bench][c] || 0.0);
     });
@@ -146,7 +153,7 @@ function plot() {
         populateTable (data, compiler);
     })});
   })).then(function(ignored) {
-    normaliseTable();
-    redraw();
+    minTimes = normaliseTable();
+    redraw(minTimes);
   });
 }
