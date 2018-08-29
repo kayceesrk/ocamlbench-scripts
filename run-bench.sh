@@ -182,7 +182,6 @@ for SWITCH in "${BENCH_SWITCHES[@]}"; do
     echo "=== UPGRADING SWITCH $SWITCH =="
     opam remove "${DISABLED_BENCHES[@]}" --yes --switch $SWITCH
     COMP=($(opam list --base --short --switch $SWITCH))
-    opam config exec --switch=$SWITCH -- opam pin add -k git -y frama-c git+https://github.com/kayceesrk/Frama-C-snapshot
     opam upgrade --all "${BENCHES[@]}" --best-effort --yes --switch $SWITCH --json $LOGDIR/$SWITCH.json
 done
 
