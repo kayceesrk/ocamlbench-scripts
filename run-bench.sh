@@ -38,7 +38,7 @@ EOF
     shift
 done
 
-export PATH=~/local/bin:$PATH
+export PATH=~/local/bin:/usr/local/bin:$PATH
 
 unset OPAMROOT OPAMSWITCH OCAMLPARAM OCAMLRUNPARAM
 
