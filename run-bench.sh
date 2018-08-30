@@ -132,6 +132,11 @@ for SW in "${INSTALLED_BENCH_SWITCHES[@]}"; do
     fi;
 done
 
+#multicore-opam remote for multicore benches
+MULTICORE_SWITCHES=($(opam switch list -s |grep '+multicore.*+bench$'))
+C_MULTICORE_SWITCHES=`echo ${MULTICORE_SWITCHES[@]} | sed "s/ /,/g"`
+opam remote add multicore https://github.com/ocamllabs/multicore-opam.git#bench --on-switches=${C_MULTICORE_SWITCHES}
+
 echo
 echo "=== UPGRADING operf-macro at $DATE ==="
 
@@ -274,7 +279,7 @@ cd $BASELOGDIR
 
 make_html () {
 	echo "<html><head><title>bench index</title></head><body><ul>
-		$(ls -d 201* latest | sed 's%\(.*\)%<li><a href="\1/build.html">\1</a></li>%')
+		$(ls -dt 201* latest | sed 's%\(.*\)%<li><a href="\1/build.html">\1</a></li>%')
 	</ul></body></html>" >build.html
 
 	echo "<html><head><title>bench index</title></head><body>
@@ -296,9 +301,9 @@ WEB=/root/ocamllabs.github.io
 mkdir -p $WEB/multicore
 tar xf results.tar -C $WEB/multicore
 
-cd $WEB
+cd $WEB/multicore
 make_html
-git add multicore
+git add .
 git commit -a -m "multicore bench sync"
 git push
 
