@@ -13,7 +13,8 @@ for line in s.split('\n'):
 
 compilers_list = sorted(list(compilers))
 
-print '<table id="example" class="display" style="width:100%"><thead><tr>'
+print '<table id="example" class="display" style="width:90%"><thead><tr>'
+print '  <th>Date</th>'
 for c in compilers_list:
 	print '  <th>' + c + '</th>'
 print '</tr></thead><tbody>'
@@ -27,9 +28,9 @@ for line in s.split('\n'):
 	dir = os.path.dirname(line).replace("./","")
 
 	if (dir != cur_dir):
-		cur_dir = dir
 		if (len(data) != 0):
 			print '  <tr>'
+			print '    <td>' + cur_dir + '</td>'
 			for c in compilers_list:
 				v = data.get(c)
 				if (v != None):
@@ -39,6 +40,7 @@ for line in s.split('\n'):
 					print '    <td></td>'
 			print '  </tr>'
 			data = {}
+		cur_dir = dir
 
 	compiler = os.path.basename(line).replace("+bench-time_real.csv","")
 	hash_file = line.replace("+bench-time_real.csv","") + ".hash"
