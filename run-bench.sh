@@ -288,9 +288,9 @@ make_html () {
 
 		<div id=\"container\" style=\"width: 90%;\"> <canvas id=\"chart\"></canvas> </div>
 		<div> <input type=\"button\" value=\"compare\" id=\"compareButton\" onclick=\"plot()\"> </div>
-		</br>
-		$(find . -name '*time_real.csv' -printf '%Ts\t%p\n' | sort -nr | cut -f2 | sed 's/.*\(20.*\)+bench-time_real.csv/<div><input type="checkbox" name="benchrun" value="\1">\1<\/div>/g')
-		</body></html>" > index.html
+		</br>" > index.html
+	python $REPODIR/build_index.py >> index.html
+	echo "</body></html>" >> index.html
 }
 
 make_html
