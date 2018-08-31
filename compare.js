@@ -74,7 +74,7 @@ function normaliseTable () {
 
       for (var compiler in table[bench]) {
         if (table[bench].hasOwnProperty(compiler)) {
-          table[bench][compiler] = Number(table[bench][compiler]) / minValue;
+          table[bench][compiler] = minValue / Number(table[bench][compiler]);
         }
       }
     }
@@ -124,7 +124,18 @@ window.onload = function () {
     data: {
       labels: [],
       datasets: []
-    }
+    },
+    options: {
+      scales: {
+        yAxes: [{
+          display: true,
+          ticks: {suggestedMin: 0},
+          scaleLabel: {
+            display: true,
+            labelString: 'Normalized work rate (%)'
+          }
+        }]
+      }
   });
 }
 
