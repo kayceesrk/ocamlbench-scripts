@@ -298,7 +298,6 @@ make_html () {
 			} );
 		</script>
 		<div id=\"container\" style=\"width: 90%;\"> <canvas id=\"chart\"></canvas> </div>
-		<div> <input type=\"button\" value=\"compare\" id=\"compareButton\" onclick=\"plot()\"> </div>
 		</br>" > index.html
 	python $REPODIR/build_index.py >> index.html
 	echo "</body></html>" >> index.html

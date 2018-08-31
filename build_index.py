@@ -35,7 +35,7 @@ for line in s.split('\n'):
 				v = data.get(c)
 				if (v != None):
 					key,text = v
-					print '    <td><input type="checkbox" name="benchrun" value="' + key + '">' + text + '</input></td>'
+					print '    <td><input type="checkbox" name="benchrun" onclick="plot()" value="' + key + '">' + text + '</input></td>'
 				else:
 					print '    <td></td>'
 			print '  </tr>'
