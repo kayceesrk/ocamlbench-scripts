@@ -293,8 +293,8 @@ make_html () {
 
 		<script src=\"compare.js\"></script>
 		<script type=\"text/javascript\" class=\"init\">
-			$(document).ready(function() {
-				$('#example').DataTable({ \"order\": [[ 0, \"desc\" ]] });
+			\$(document).ready(function() {
+				\$('#example').DataTable({ \"order\": [[ 0, \"desc\" ]] });
 			} );
 		</script>
 		<div id=\"container\" style=\"width: 90%;\"> <canvas id=\"chart\"></canvas> </div>
