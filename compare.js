@@ -136,6 +136,7 @@ window.onload = function () {
           }
         }]
       }
+		}
   });
 }
 
