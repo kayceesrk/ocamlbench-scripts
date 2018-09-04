@@ -315,6 +315,7 @@ cd $WEB/multicore
 make_html
 git add .
 git commit -a -m "multicore bench sync"
+git pull
 git push
 
 echo "Done"
