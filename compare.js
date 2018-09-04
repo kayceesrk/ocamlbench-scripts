@@ -58,6 +58,8 @@ function populateTable (data, compiler) {
 function normaliseTable () {
   var minTimes = {};
   var benches = Object.keys(table).sort();
+  var wantSpeedup = document.getElementById("speedup").checked;
+
   benches.forEach (function (bench) {
     if (table.hasOwnProperty(bench)) {
       var minValue = Number.MAX_VALUE;
@@ -74,7 +76,11 @@ function normaliseTable () {
 
       for (var compiler in table[bench]) {
         if (table[bench].hasOwnProperty(compiler)) {
-          table[bench][compiler] = minValue / Number(table[bench][compiler]);
+          if (wantSpeedup) {
+            table[bench][compiler] = Number(table[bench][compiler]) / minValue;
+          } else {
+            table[bench][compiler] = minValue / Number(table[bench][compiler]);
+          }
         }
       }
     }
@@ -114,6 +120,11 @@ function redraw(minTimes) {
   window.chart.data.datasets = datasets;
   window.chart.data.labels = labels;
   window.chart.options.scales.xAxes[0].ticks.maxRotation = 90;
+  if (document.getElementById("speedup").checked) {
+    window.chart.options.scales.yAxes[0].scaleLabel.labelString = "Normalised running time";
+  } else {
+    window.chart.options.scales.yAxes[0].scaleLabel.labelString = "Normalized work rate (%)";
+  }
   window.chart.update();
 }
 
@@ -145,7 +156,6 @@ function plot() {
   compilers = [];
   var urls = [];
   var fileSuffix = "+bench-time_real.csv";
-
   var checkedBoxes = document.querySelectorAll('input[name=benchrun]:checked');
   checkedBoxes.forEach(function(checkBox) {
     urls.push(checkBox.value + fileSuffix);

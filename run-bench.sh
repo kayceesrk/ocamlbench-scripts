@@ -273,7 +273,7 @@ EOF
 
 publish log timings summary.csv "*/*.summary" "*-time_real.csv"
 
-cp $REPODIR/compare.js $BASELOGDIR
+cp $REPODIR/compare.js $REPODIR/style.css $BASELOGDIR
 
 cd $BASELOGDIR
 
@@ -298,13 +298,22 @@ make_html () {
 			} );
 		</script>
 		<div id=\"container\" style=\"width: 90%;\"> <canvas id=\"chart\"></canvas> </div>
+		<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">
+		</br>
+		<b>What to plot?</b> Work rate
+		<label class=\"switch\" onclick=\"plot()\">
+		<input type=\"checkbox\" id=\"speedup\">
+		<span class=\"slider round\"></span>
+		</label>
+		Running time
+		</br>
 		</br>" > index.html
 	python $REPODIR/build_index.py >> index.html
 	echo "</body></html>" >> index.html
 }
 
 make_html
-tar -u index.html build.html compare.js -f results.tar
+tar -u index.html build.html compare.js style.css -f results.tar
 gzip -c --rsyncable results.tar > results.tar.gz
 
 WEB=/root/ocamllabs.github.io
