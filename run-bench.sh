@@ -4,7 +4,7 @@
 #
 # opam 2.0~alpha6 an "operf" switch with operf-macro installed (currently
 # working: ocaml 4.02.3, perf pinned to git://github.com/kayceesrk/ocaml-perf,
-# operf-macro pinned to git://github.com/OCamlPro/operf-macro#opam2)
+# operf-macro pinned to git://github.com/kayceesrk/operf-macro#opam2)
 #
 # opam repo add benches <repo> -a
 #
@@ -251,7 +251,7 @@ for SWITCH in "${BENCH_SWITCHES[@]}"; do
     nice -19 opam config exec --switch $OPERF_SWITCH -- timeout 90m operf-macro run --switch $SWITCH
 done
 
-opam config exec --switch $OPERF_SWITCH -- operf-macro summarize -b csv >$LOGDIR/summary.csv
+opam config exec --switch $OPERF_SWITCH -- operf-macro summarize --no-normalize -b csv >$LOGDIR/summary.csv
 
 for SWITCH in "${BENCH_SWITCHES[@]}"; do
 	opam config exec --switch $OPERF_SWITCH -- operf-macro summarize -b csv --no-normalize -t time_real --switch $SWITCH > $LOGDIR/$SWITCH-time_real.csv
