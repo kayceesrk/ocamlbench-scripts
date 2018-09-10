@@ -41,7 +41,7 @@ for b in benches:
                 v = data.get(c)
                 if (v != None):
                     d,c,h = v
-                    print '    <td><input type="checkbox" name="benchrun" onclick="plot()" directory="' + d + '" compiler="' + c + '" hash="' + h +'">' + h + '</input></td>'
+                    print '    <td><input type="checkbox" name="benchrun" onclick="plot()" value="' + d + ':' + c + ':' + h + '">' + h + '</input></td>'
                 else:
                     print '    <td></td>'
             print '  </tr>'
