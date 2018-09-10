@@ -160,7 +160,7 @@ function redraw(data) {
   let divisor = 1.0;
   if (data.normalise) {
     let min = Math.min(...data.mins);
-    while (min / divisor > 10.0) {
+    while (min / divisor > 1.0) {
       divisor = divisor * 10.0;
     }
     divisor = divisor / 10.0;
