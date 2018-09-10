@@ -253,10 +253,6 @@ done
 
 opam config exec --switch $OPERF_SWITCH -- operf-macro summarize --no-normalize -b csv >$LOGDIR/summary.csv
 
-for SWITCH in "${BENCH_SWITCHES[@]}"; do
-	opam config exec --switch $OPERF_SWITCH -- operf-macro summarize -b csv --no-normalize -t time_real --switch $SWITCH > $LOGDIR/$SWITCH-time_real.csv
-done
-
 cp -r $OPERFDIR/* $LOGDIR
 
 BENCH_TIME=$(($(date +%s) - BENCH_START_TIME))
@@ -271,7 +267,7 @@ Benches: $(hours $BENCH_TIME)
 Total: $(hours $((UPGRADE_TIME + BENCH_TIME)))
 EOF
 
-publish log timings summary.csv "*/*.summary" "*-time_real.csv"
+publish log timings summary.csv "*/*.summary"
 
 cp $REPODIR/compare.js $REPODIR/style.css $BASELOGDIR
 

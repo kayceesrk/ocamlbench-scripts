@@ -5,11 +5,11 @@ import os.path
 from sets import Set
 
 compilers = Set()
-s = subprocess.check_output(["find . -name '*time_real.csv' -printf '%Ts\t%p\n' | sort -nr | cut -f2"], shell=True)
+s = subprocess.check_output(["find . -name '*.hash' -printf '%Ts\t%p\n' | sort -nr | cut -f2"], shell=True)
 for line in s.split('\n'):
 	if (line == ""):
 		continue
-	compilers.add(os.path.basename(line).replace("+bench-time_real.csv",""))
+	compilers.add(os.path.basename(line).replace(".hash",""))
 
 compilers_list = sorted(list(compilers))
 
@@ -35,15 +35,14 @@ for line in s.split('\n'):
 				v = data.get(c)
 				if (v != None):
 					key,text = v
-					print '    <td><input type="checkbox" name="benchrun" onclick="plot()" value="' + key + '">' + text + '</input></td>'
+					print '    <td><input type="checkbox" name="benchrun" onclick="plot()" value="' + key + '" hash="' + text +'">' + text + '</input></td>'
 				else:
 					print '    <td></td>'
 			print '  </tr>'
 			data = {}
 		cur_dir = dir
 
-	compiler = os.path.basename(line).replace("+bench-time_real.csv","")
-	hash_file = line.replace("+bench-time_real.csv","") + ".hash"
-	data[compiler] = (hash_file.replace(".hash","").replace("./",""), open(hash_file, "r").read().replace("\n",""))
+	compiler = os.path.basename(line).replace(".hash","")
+	data[compiler] = (line.replace(".hash","").replace("./",""), open(line, "r").read().replace("\n",""))
 
 print '</table>'
