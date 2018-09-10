@@ -44,138 +44,187 @@ function CSVToArray( strData, strDelimiter ){
   return( arrData );
 }
 
+//table -> directory -> topic -> compiler -> bench -> value
 var table = {};
-var compilers = [];
-
-function populateTable (data, compiler) {
-  data.forEach (function(row) {
-    if (row[0] === "time_real" || row[0] === "") return;
-    table[row[0]] = table[row[0]] || {};
-    table[row[0]][compiler] = row[1];
-  });
-}
-
-function normaliseTable () {
-  var minTimes = {};
-  var benches = Object.keys(table).sort();
-  var wantSpeedup = document.getElementById("speedup").checked;
-
-  benches.forEach (function (bench) {
-    if (table.hasOwnProperty(bench)) {
-      var minValue = Number.MAX_VALUE;
-
-      for (var compiler in table[bench]) {
-        if (table[bench].hasOwnProperty(compiler)) {
-          if (Number(table[bench][compiler]) < minValue) {
-            minValue = Number(table[bench][compiler]);
-          }
-        }
-      }
-
-      minTimes[bench] = minValue;
-
-      for (var compiler in table[bench]) {
-        if (table[bench].hasOwnProperty(compiler)) {
-          if (wantSpeedup) {
-            table[bench][compiler] = Number(table[bench][compiler]) / minValue;
-          } else {
-            table[bench][compiler] = minValue / Number(table[bench][compiler]);
-          }
-        }
-      }
-    }
-  });
-
-  return minTimes;
-}
-
-function redraw(minTimes) {
-  var timings = {};
-  compilers.forEach (function(c) {
-    timings[c] = [];
-  });
-  var labels = [];
-  var benches = Object.keys(table).sort();
-  benches.forEach (function (bench) {
-    labels.push(bench + " (" + Math.round(minTimes[bench]/1000000.0) + ")");
-    compilers.forEach(function (c) {
-      timings[c].push(table[bench][c] || 0.0);
-    });
-  });
-
-  var datasets = [];
-  var colors = window.chartColors.slice(0);
-  compilers.forEach(function (c) {
-    color = colors.shift();
-    colors.push(color);
-    datasets.push({
-      label: c,
-      borderWidth: 1,
-      borderColor: color,
-      backgroundColor: colorhelper(color).alpha(0.5).rgbString(),
-      data: timings[c]}
-    );
-  });
-
-  window.chart.data.datasets = datasets;
-  window.chart.data.labels = labels;
-  window.chart.options.scales.xAxes[0].ticks.maxRotation = 90;
-  if (document.getElementById("speedup").checked) {
-    window.chart.options.scales.yAxes[0].scaleLabel.labelString = "Normalised running time";
-  } else {
-    window.chart.options.scales.yAxes[0].scaleLabel.labelString = "Normalized work rate (%)";
-  }
-  window.chart.update();
-}
+var hashes = {};
 
 window.onload = function () {
+  topics = ["time_real", "size", "code_size", "data_size", "minor_words",
+            "major_words", "promoted_words", "top_heap_words", "minor_collections",
+            "major_collections", "heap_words", "mean_space_overhead"];
+  var select = document.getElementById("topic");
+  topics.forEach (function(topic) {
+    var el = document.createElement("option");
+    el.textContent = topic;
+    el.value = topic;
+    select.appendChild(el);
+  });
+
   var ctx = document.getElementById("chart");
   window.chart = new Chart (ctx, {
     type : 'bar',
     data: {
       labels: [],
       datasets: []
-    },
-    options: {
-      scales: {
-        yAxes: [{
-          display: true,
-          ticks: {suggestedMin: 0},
-          scaleLabel: {
-            display: true,
-            labelString: 'Normalized work rate (%)'
-          }
-        }]
-      }
-		}
+    }
   });
 }
 
-function plot() {
-  table = {};
+function populateTable (directory, compiler, data) {
+  topic = "";
   compilers = [];
-  var urls = [];
-  var fileSuffix = "+bench-time_real.csv";
-  var checkedBoxes = document.querySelectorAll('input[name=benchrun]:checked');
-  checkedBoxes.forEach(function(checkBox) {
-    urls.push(checkBox.value + fileSuffix);
+  table[directory] = {};
+  data.forEach (function(a) {
+    if (a.length == 1) {
+      topic = "";
+      return;
+    }
+    if (topic === "") {
+      topic = a[0];
+      table[directory][topic] = {};
+      compilers = [];
+      for (i = 1; i < a.length; i++) {
+        if (i % 2 == 1) {
+          compiler = a[i].replace("+bench","");
+          compilers.push(compiler);
+          table[directory][topic][compiler] = {};
+        }
+      }
+    } else {
+      bench = a[0];
+      for (i = 1; i < a.length; i++) {
+        if (i % 2 == 1) {
+          table[directory][topic][compilers[(i-1)/2]][bench] = a[i];
+        }
+      }
+    }
+  });
+}
+
+function gatherData (configs) {
+  let normalise = document.getElementById("normalize").checked;
+  let t = document.getElementById("topic");
+  let topic = t.options[t.selectedIndex].value;
+
+  let benches_set = new Set();
+  configs.forEach(function(c) {
+    Object.keys(table[c.directory][topic][c.compiler]).forEach(function(b) {
+        benches_set.add(b);
+    });
+  });
+  let benches = Array.from(benches_set).sort();
+
+  let data = [];
+  let mins = [];
+  benches.forEach (function (bench) {
+    let r = {};
+    let minValue = Number.MAX_VALUE;
+    configs.forEach(function(c) {
+      let bo = table[c.directory][topic][c.compiler];
+      let compiler = c.directory + ":" + c.compiler + ":" + c.hash;
+      if (bo.hasOwnProperty(bench)) {
+        r[compiler] = Number(bo[bench]);
+        if (normalise && r[compiler] < minValue && r[compiler] != 0.0) {
+          minValue = r[compiler];
+        }
+      } else {
+        r[compiler] = 0.0;
+      }
+    });
+    if (normalise) {
+      for (let compiler in r) {
+        if (r.hasOwnProperty(compiler)) {
+          r[compiler] = r[compiler] / minValue;
+        }
+      }
+    }
+    data.push(r);
+    mins.push(minValue);
   });
 
-  Promise.all(urls.map(function(url) {
-    return fetch(url).then(function(response) {
-      return response.ok ? response.text() : Promise.reject(response.status);
-    }).then(function(csvtext) {
-      return fetch(url.replace(fileSuffix,".hash")).then(function(response) {
-        return response.ok ? response.text() : Promise.reject(response.status);
-      }).then(function(hash) {
-        var data = CSVToArray(csvtext); //drops the first element
-        var compiler = url.replace("/", ":").replace(fileSuffix,":") + hash;
-        if (!compilers.includes(compiler))
-          compilers.push(compiler);
-        populateTable (data, compiler);
-    })});
-  })).then(function(ignored) {
-    minTimes = normaliseTable();
-    redraw(minTimes);
+  let plotData = {};
+  configs.forEach (function(c) {
+    let compiler = c.directory + ":" + c.compiler + ":" + c.hash;
+    let values = [];
+    data.forEach(function(d) {
+      values.push(d[compiler]);
+    });
+    plotData[compiler] = values;
   });
+
+  return {benches: benches, data: plotData, mins: mins, topic: topic, normalise: normalise};
+}
+
+function redraw(data) {
+  let labels=[];
+  let divisor = 1.0;
+  if (data.normalise) {
+    let min = Math.min(...data.mins);
+    while (min / divisor > 10.0) {
+      divisor = divisor * 10.0;
+    }
+    divisor = divisor / 10.0;
+    for (let i=0; i < data.benches.length; i++) {
+      let annot = 0.0;
+      if (data.mins[i] != Number.MAX_VALUE) {
+        annot = Math.round(data.mins[i]/divisor);
+      }
+      labels.push (data.benches[i] + " (" + annot + ")");
+    }
+  } else {
+    labels = data.benches;
+  }
+
+  var datasets = [];
+  var colors = window.chartColors.slice(0);
+  for (var compiler in data.data) {
+    if (data.data.hasOwnProperty(compiler)) {
+      color = colors.shift();
+      colors.push(color);
+      datasets.push({
+        label: compiler,
+        borderWidth: 1,
+        borderColor: color,
+        backgroundColor: colorhelper(color).alpha(0.5).rgbString(),
+        data: data.data[compiler]
+      });
+    }
+  }
+
+  let title = "";
+  if (data.normalise) {
+    title = data.topic + " (min x " + divisor + ")";
+  } else {
+    title = data.topic;
+  }
+
+  window.chart.data.datasets = datasets;
+  window.chart.data.labels = labels;
+  window.chart.options.scales.xAxes[0].ticks.maxRotation = 90;
+  window.chart.options.title.text = title;
+  window.chart.options.title.display = true;
+  window.chart.update();
+}
+
+function plot() {
+  var checkedboxes = document.querySelectorAll('input[name=benchrun]:checked');
+  var configs = []
+  checkedboxes.forEach(function(cb) {
+    var a = cb.value.split(":");
+    configs.push({directory: a[0], compiler: a[1], hash: a[2], download: !table.hasOwnProperty(a[0])});
+  });
+
+  Promise.all(configs.map(function(c) {
+    if (c.download) {
+      console.log ("Downloading " + c.directory);
+      return fetch(c.directory + "/summary.csv").then(function(response) {
+        return response.ok ? response.text() : Promise.reject(response.status);
+      }).then(function(csvtext) {
+        var data = CSVToArray(csvtext);
+        populateTable(c.directory, c.compiler, data);
+      });
+    }})).then(function(ignored) {
+      d = gatherData(configs);
+      redraw(d);
+    });
 }
