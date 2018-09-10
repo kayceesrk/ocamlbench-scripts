@@ -40,8 +40,8 @@ for b in benches:
             for c in compilers_list:
                 v = data.get(c)
                 if (v != None):
-                    key,text = v
-                    print '    <td><input type="checkbox" name="benchrun" onclick="plot()" value="' + key + '" hash="' + text +'">' + text + '</input></td>'
+                    d,c,h = v
+                    print '    <td><input type="checkbox" name="benchrun" onclick="plot()" directory="' + d + '" compiler="' + c + '" hash="' + h +'">' + h + '</input></td>'
                 else:
                     print '    <td></td>'
             print '  </tr>'
@@ -50,6 +50,6 @@ for b in benches:
 
     hash_file = "./" + dir + "/" + compiler + ".hash"
     if (os.path.exists(hash_file)):
-        data[compiler] = (dir + "/" + compiler, open(hash_file, "r").read().replace("\n",""))
+        data[compiler] = (dir, compiler, open(hash_file, "r").read().replace("\n",""))
 
 print '</table>'
