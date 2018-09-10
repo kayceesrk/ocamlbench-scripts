@@ -15,8 +15,9 @@ for line in s.split('\n'):
         for c in line2.split(','):
             if (c == "time_real" or c == "" or c == "\n"):
                 continue
-            compilers_set.add(c)
-            benches.append((os.path.dirname(line).replace("./",""), c))
+            compiler = c.replace("+bench","")
+            compilers_set.add(compiler)
+            benches.append((os.path.dirname(line).replace("./",""), compiler))
 
 compilers_list = sorted(list(compilers_set))
 
@@ -47,7 +48,7 @@ for b in benches:
             data = {}
         cur_dir = dir
 
-    hash_file = "./" + dir + "/" + compiler.replace("+bench","") + ".hash"
+    hash_file = "./" + dir + "/" + compiler + ".hash"
     if (os.path.exists(hash_file)):
         data[compiler] = (dir + "/" + compiler, open(hash_file, "r").read().replace("\n",""))
 
