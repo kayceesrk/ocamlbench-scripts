@@ -48,10 +48,41 @@ function CSVToArray( strData, strDelimiter ){
 var table = {};
 var hashes = {};
 
+
+let topics = ["time_real", "size", "code_size", "data_size", "minor_words",
+              "major_words", "promoted_words", "top_heap_words", "minor_collections",
+              "major_collections", "heap_words", "mean_space_overhead"];
+let yaxis_labels = {
+  time_real       : "milliseconds",
+  size            : "megabytes",
+  code_size       : "megabytes",
+  data_size       : "megabytes",
+  minor_words     : "megawords",
+  major_words     : "megawords",
+  promoted_words  : "megawords",
+  top_heap_words  : "megawords",
+  minor_collections : "",
+  major_collections : "",
+  heap_words      : "megawords",
+  mean_space_overhead : "percentage"
+};
+
+let divisors = {
+  time_real       : 1000000.0,
+  size            : 1024.0 * 1024.0,
+  code_size       : 1024.0 * 1024.0,
+  data_size       : 1024.0 * 1024.0,
+  minor_words     : 1024.0 * 1024.0,
+  major_words     : 1024.0 * 1024.0,
+  promoted_words  : 1024.0 * 1024.0,
+  top_heap_words  : 1024.0 * 1024.0,
+  minor_collections : 1.0,
+  major_collections : 1.0,
+  heap_words      : 1024.0 * 1024.0,
+  mean_space_overhead : 1.0
+};
+
 window.onload = function () {
-  topics = ["time_real", "size", "code_size", "data_size", "minor_words",
-            "major_words", "promoted_words", "top_heap_words", "minor_collections",
-            "major_collections", "heap_words", "mean_space_overhead"];
   var select = document.getElementById("topic");
   topics.forEach (function(topic) {
     var el = document.createElement("option");
@@ -131,11 +162,12 @@ function gatherData (configs) {
         r[compiler] = 0.0;
       }
     });
-    if (normalise) {
-      for (let compiler in r) {
-        if (r.hasOwnProperty(compiler)) {
+    for (let compiler in r) {
+      if (r.hasOwnProperty(compiler)) {
+        if (normalise)
           r[compiler] = r[compiler] / minValue;
-        }
+        else
+          r[compiler] = r[compiler] / divisors[topic];
       }
     }
     data.push(r);
@@ -157,17 +189,11 @@ function gatherData (configs) {
 
 function redraw(data) {
   let labels=[];
-  let divisor = 1.0;
   if (data.normalise) {
-    let min = Math.min(...data.mins);
-    while (min / divisor > 10.0) {
-      divisor = divisor * 10.0;
-    }
-    divisor = divisor / 10.0;
     for (let i=0; i < data.benches.length; i++) {
       let annot = 0.0;
       if (data.mins[i] != Number.MAX_VALUE) {
-        annot = Math.round(data.mins[i]/divisor);
+        annot = Math.round(data.mins[i]/divisors[data.topic]);
       }
       labels.push (data.benches[i] + " (" + annot + ")");
     }
@@ -193,7 +219,7 @@ function redraw(data) {
 
   let title = "";
   if (data.normalise) {
-    title = data.topic + " (min x " + divisor + ")";
+    title = data.topic + " (" + yaxis_labels[data.topic] + ")"
   } else {
     title = data.topic;
   }
@@ -201,6 +227,8 @@ function redraw(data) {
   window.chart.data.datasets = datasets;
   window.chart.data.labels = labels;
   window.chart.options.scales.xAxes[0].ticks.maxRotation = 90;
+  window.chart.options.scales.yAxes[0].scaleLabel.display = !data.normalise;
+  window.chart.options.scales.yAxes[0].scaleLabel.labelString = yaxis_labels[data.topic];
   window.chart.options.title.text = title;
   window.chart.options.title.display = true;
   window.chart.update();
