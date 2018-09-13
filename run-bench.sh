@@ -302,7 +302,7 @@ make_html () {
     </br>
     </br>
 " > index.html
-	python $REPODIR/build_index.py >> index.html
+	python3 $REPODIR/build_index.py >> index.html
 	echo "</body></html>" >> index.html
 }
 
