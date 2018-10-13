@@ -14,10 +14,8 @@
 #    git+https://github.com/kayceesrk/ocamlbench-repo#multicore for multicore
 #
 # Current switch should be "operf".
-#
-# Update REPODIR variable below to the location of this cloned repo.
 
-REPODIR=~/ocamlbench-scripts
+REPODIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 shopt -s nullglob
 
@@ -182,12 +180,15 @@ else
     BENCH_SWITCHES=("${SWITCHES[@]}")
 fi
 
+PINNED_PKGS=(dune.1.2.1)
+
 for SWITCH in "${BENCH_SWITCHES[@]}"; do
     echo
     echo "=== UPGRADING SWITCH $SWITCH =="
     opam remove "${DISABLED_BENCHES[@]}" --yes --switch $SWITCH
     COMP=($(opam list --base --short --switch $SWITCH))
-    opam upgrade --all "${BENCHES[@]}" --best-effort --yes --switch $SWITCH --json $LOGDIR/$SWITCH.json
+    opam install "${PINNED_PKGS[@]}" --yes --switch $SWITCH
+    opam upgrade --ignore-constraints-on=ocaml "${BENCHES[@]}" --best-effort --yes --switch $SWITCH --json $LOGDIR/$SWITCH.json
 done
 
 LOGSWITCHES=("${BENCH_SWITCHES[@]/#/$LOGDIR/}")
@@ -302,7 +303,7 @@ make_html () {
     </br>
     </br>
 " > index.html
-  python3 $REPODIR/build_index.py >> index.html
+  python $REPODIR/build_index.py >> index.html
   echo "</body></html>" >> index.html
 }
 
