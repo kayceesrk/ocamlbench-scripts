@@ -10,7 +10,6 @@ RUN sudo apt install -y python tmux vim pkg-config zlib1g-dev autoconf libgmp-de
 RUN cd && \
 		git clone https://github.com/kayceesrk/ocamlbench-scripts.git && \
 		cd ocamlbench-scripts && \
-		git checkout dockerfile && \
 		eval $(opam env) && \
 		sh -c "make opamjson2html.native" && \
 		opam repo add benches git+https://github.com/kayceesrk/ocamlbench-repo#multicore -a
