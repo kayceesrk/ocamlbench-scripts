@@ -14,24 +14,25 @@
 #    git+https://github.com/kayceesrk/ocamlbench-repo#multicore for multicore
 #
 # Current switch should be "operf".
-#
-# Update REPODIR variable below to the location of this cloned repo.
 
-REPODIR=/root/ocamlbench-scripts
+REPODIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 shopt -s nullglob
 
 OPT_NOWAIT=
 OPT_LAZY=
+OPT_SYNC=
 while [ $# -gt 0 ]; do
     case "$1" in
         --nowait) OPT_NOWAIT=1;;
         --lazy) OPT_LAZY=1;;
+        --sync) OPT_SYNC=1;;
         *)
             cat <<EOF
 Unknown option $1, options are:
   --nowait    don't wait for the system load to settle down before benches
   --lazy      only run the benches if upstream changes are detected
+  --sync      sync with upstream github repo
 EOF
             exit 1
     esac
@@ -313,15 +314,18 @@ make_html
 tar -u index.html build.html compare.js style.css -f results.tar
 gzip -c --rsyncable results.tar > results.tar.gz
 
-WEB=/root/ocamllabs.github.io
-mkdir -p $WEB/multicore
-tar xf results.tar -C $WEB/multicore
 
-cd $WEB/multicore
-make_html
-git add .
-git commit -a -m "multicore bench sync"
-git pull
-git push
+if [ ! -z "$OPT_SYNC" ]; then
+  WEB=/root/ocamllabs.github.io
+  mkdir -p $WEB/multicore
+  tar xf results.tar -C $WEB/multicore
+
+  cd $WEB/multicore
+  make_html
+  git add .
+  git commit -a -m "multicore bench sync"
+  git pull
+  git push
+fi
 
 echo "Done"
